@@ -56,6 +56,8 @@ func main() {
 		password = accessToken
 	}
 
+	log.Fatal("test", repo, registry, username, password)
+
 	os.Setenv("PLUGIN_REPO", repo)
 	os.Setenv("PLUGIN_REGISTRY", registry)
 	os.Setenv("DOCKER_USERNAME", username)
