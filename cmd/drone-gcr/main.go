@@ -2,14 +2,17 @@ package main
 
 import (
 	"encoding/base64"
+	"encoding/json"
+	"fmt"
+	"log"
+	"net"
+	"net/http"
 	"os"
 	"os/exec"
 	"path"
 	"strings"
+	"time"
 )
-
-// gcr default username
-const username = "_json_key"
 
 func main() {
 	var (
@@ -21,6 +24,8 @@ func main() {
 			"GOOGLE_CREDENTIALS",
 			"TOKEN",
 		)
+		// default username
+		username = "_json_key"
 	)
 
 	// decode the token if base64 encoded
@@ -39,6 +44,16 @@ func main() {
 	// should prepend.
 	if !strings.HasPrefix(repo, registry) {
 		repo = path.Join(registry, repo)
+	}
+
+	// fallback to use access token when password is not found
+	if password == "" {
+		accessToken, err := getGCEAccessToken()
+		if err != nil {
+			log.Fatal(err)
+		}
+		username = "oauth2accesstoken"
+		password = accessToken
 	}
 
 	os.Setenv("PLUGIN_REPO", repo)
@@ -64,4 +79,69 @@ func getenv(key ...string) (s string) {
 		}
 	}
 	return
+}
+
+func getGCEAccessToken() (string, error) {
+	client := newMetadataClient()
+	saEmail, err := client.GetServiceAccountEmail()
+	if err != nil {
+		return "", err
+	}
+	accessToken, err := client.GetAccessToken(saEmail)
+	if err != nil {
+		return "", err
+	}
+	return accessToken, nil
+}
+
+type metadataClient struct {
+	httpclient *http.Client
+	endpoint   string
+}
+
+func newMetadataClient() *metadataClient {
+	return &metadataClient{
+		httpclient: &http.Client{
+			Transport: &http.Transport{
+				Dial: (&net.Dialer{
+					Timeout:   2 * time.Second,
+					KeepAlive: 30 * time.Second,
+				}).Dial,
+			},
+		},
+		endpoint: "http://metadata.google.internal/computeMetadata/v1",
+	}
+}
+
+func (client *metadataClient) GetAccessToken(saEmail string) (string, error) {
+	var data struct {
+		AccessToken string `json:"access_token"`
+	}
+	path := fmt.Sprintf("/instance/service-accounts/%s/token", saEmail)
+	if err := client.get(&data, path); err != nil {
+		return "", err
+	}
+	return data.AccessToken, nil
+}
+
+func (client *metadataClient) GetServiceAccountEmail() (string, error) {
+	var data struct {
+		Default struct{ Email string }
+	}
+	path := "/instance/service-accounts/?recursive=true"
+	if err := client.get(&data, path); err != nil {
+		return "", err
+	}
+	return data.Default.Email, nil
+}
+
+func (client *metadataClient) get(target interface{}, path string) error {
+	req, _ := http.NewRequest("GET", fmt.Sprintf("%s%s", client.endpoint, path), nil)
+	req.Header.Add("Metadata-Flavor", "Google")
+	resp, err := client.httpclient.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	return json.NewDecoder(resp.Body).Decode(target)
 }
