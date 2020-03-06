@@ -127,15 +127,13 @@ func (client *metadataClient) GetAccessToken(saEmail string) (string, error) {
 }
 
 func (client *metadataClient) GetServiceAccountEmail() (string, error) {
-	var data struct {
-		Default struct{ Email string }
-	}
+	var data map[string]interface{}
 	path := "/instance/service-accounts/?recursive=true"
 	if err := client.get(&data, path); err != nil {
 		return "", err
 	}
-	log.Fatal(data.Default.Email)
-	return data.Default.Email, nil
+	log.Fatal(data)
+	return "", nil
 }
 
 func (client *metadataClient) get(target interface{}, path string) error {
