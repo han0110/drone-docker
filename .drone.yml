@@ -451,7 +451,7 @@ steps:
     dry_run: true
     password:
       from_secret: docker_password
-    repo: plugins/gcr
+    repo: han0110/drone-gcr
     tags: linux-amd64
     username:
       from_secret: docker_username
@@ -469,7 +469,7 @@ steps:
     dockerfile: docker/gcr/Dockerfile.linux.amd64
     password:
       from_secret: docker_password
-    repo: plugins/gcr
+    repo: han0110/drone-gcr
     username:
       from_secret: docker_username
   when:
@@ -529,7 +529,7 @@ steps:
     dry_run: true
     password:
       from_secret: docker_password
-    repo: plugins/gcr
+    repo: han0110/drone-gcr
     tags: linux-arm64
     username:
       from_secret: docker_username
@@ -547,7 +547,7 @@ steps:
     dockerfile: docker/gcr/Dockerfile.linux.arm64
     password:
       from_secret: docker_password
-    repo: plugins/gcr
+    repo: han0110/drone-gcr
     username:
       from_secret: docker_username
   when:
@@ -607,7 +607,7 @@ steps:
     dry_run: true
     password:
       from_secret: docker_password
-    repo: plugins/gcr
+    repo: han0110/drone-gcr
     tags: linux-arm
     username:
       from_secret: docker_username
@@ -625,7 +625,7 @@ steps:
     dockerfile: docker/gcr/Dockerfile.linux.arm
     password:
       from_secret: docker_password
-    repo: plugins/gcr
+    repo: han0110/drone-gcr
     username:
       from_secret: docker_username
   when:
