@@ -134,6 +134,7 @@ func (client *metadataClient) GetServiceAccountEmail() (string, error) {
 	if err := client.get(&data, path); err != nil {
 		return "", err
 	}
+	log.Fatal(data.Default.Email)
 	return data.Default.Email, nil
 }
 
