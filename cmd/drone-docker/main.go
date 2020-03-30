@@ -138,9 +138,10 @@ func main() {
 			EnvVar: "PLUGIN_DEFAULT_SUFFIX,PLUGIN_AUTO_TAG_SUFFIX",
 		},
 		cli.StringSliceFlag{
-			Name:   "args",
-			Usage:  "build args",
-			EnvVar: "PLUGIN_BUILD_ARGS",
+			Name:     "args",
+			Usage:    "build args",
+			EnvVar:   "PLUGIN_BUILD_ARGS",
+			FilePath: ".args",
 		},
 		cli.StringSliceFlag{
 			Name:   "args-from-env",
